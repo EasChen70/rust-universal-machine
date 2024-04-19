@@ -49,12 +49,31 @@ pub fn rum(first: Vec<u32>) {
         let hold = disassemble(memory[0][pc]);
         if hold.0 > 13 {
             process::exit(1);
+        }
+        if pc > memory[0].len(){
+            process::exit(1);
         } else if hold.0 == 1 {
-            register[hold.1 as usize] = memory[register[hold.2 as usize] as usize][register[hold.3 as usize] as usize];
-            pc += 1;
+            if identifier.contains(&(register[hold.2 as usize] as usize)){
+                process::exit(1);
+            }
+            else if register[hold.3 as usize] as usize > memory[register[hold.2 as usize] as usize].len() -1{
+                process::exit(1);
+            }
+            else{
+                register[hold.1 as usize] = memory[register[hold.2 as usize] as usize][register[hold.3 as usize] as usize];
+                pc += 1;
+            }
         } else if hold.0 == 2 {
-            memory[register[hold.1 as usize] as usize][register[hold.2 as usize] as usize] = register[hold.3 as usize];
-            pc += 1;
+            if identifier.contains(&(register[hold.1 as usize] as usize)){
+                process::exit(1);
+            }
+            else if register[hold.2 as usize] as usize > memory[register[hold.1 as usize] as usize].len() -1{
+                process::exit(1);
+            }
+            else{
+                memory[register[hold.1 as usize] as usize][register[hold.2 as usize] as usize] = register[hold.3 as usize];
+                pc += 1;
+            }
         } else if hold.0 == 0 {
             if register[hold.3 as usize] != 0 {
                 register[hold.1 as usize] = register[hold.2 as usize];
@@ -74,8 +93,16 @@ pub fn rum(first: Vec<u32>) {
             }
             pc += 1;
         } else if hold.0 == 9 {
-            identifier.push(register[hold.3 as usize] as usize);
-            pc += 1;
+            if register[hold.3 as usize] == 0{
+                process::exit(1);
+            }
+            else if identifier.contains(&(register[hold.3 as usize] as usize)){
+                process::exit(1);
+            }
+            else{
+                identifier.push(register[hold.3 as usize] as usize);
+                pc += 1;
+            }
         } else if hold.0 == 10 {
             if register[hold.3 as usize] <= 255 {
                 print!("{}", register[hold.3 as usize] as u8 as char);
@@ -90,19 +117,16 @@ pub fn rum(first: Vec<u32>) {
             register[hold.3 as usize] = num;
             pc += 1;
         } else if hold.0 == 12 {
-            if let Some(idx) = usize::try_from(register[hold.3 as usize]).ok() {
-                if idx < register.len() {
-                    if register[hold.2 as usize] == 0 {
-                        pc = register[hold.3 as usize] as usize;
-                    } else {
-                        memory[0] = memory[idx].clone();
-                        pc = register[hold.3 as usize] as usize;
-                    }
-                } else {
-                    process::exit(1); // or handle the error in some other way
-                }
-            } else {
-                process::exit(1); // or handle the error in some other way
+            if identifier.contains(&(register[hold.3 as usize] as usize)){
+                process::exit(1);
+            }
+            if register[hold.2 as usize] == 0{
+                pc = register[hold.3 as usize] as usize;
+            }
+            else{
+                let temp:Vec<u32> = memory[register[hold.2 as usize] as usize].clone();
+                memory[0] = temp;
+                pc = register[hold.3 as usize] as usize;
             }
         } else if hold.0 == 13 {
             register[hold.1 as usize] = hold.2;
@@ -146,6 +170,6 @@ pub fn simple_instructions(op: u32, rb: u32, rc: u32) -> u32 {
             }
         }
         6 => !(rb & rc),
-        _ => 1,
+        _ => process::exit(1),
     }
 }
