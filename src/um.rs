@@ -44,7 +44,7 @@ pub fn rum(fisrt: Vec<u32>){
     //make pc equal to the first word in memory[0]
     let mut pc: u32 = memory[0][0];
     let mut x = 0;
-    while x <= memory[0].len(){
+    while x < memory[0].len(){
         //gets the op, ra, rb, rc
         let hold = disassemble(pc);
         //makes sure it is a valid op code 
@@ -145,19 +145,19 @@ pub fn rum(fisrt: Vec<u32>){
             x = x + 1;
         }
         //load program 
-        else if hold.0 == 12{
-            //makes pc equal to the specific memory
-            if register[hold.2 as usize] == 0{
+        else if hold.0 == 12 {
+            // makes pc equal to the specific memory
+            if register[hold.2 as usize] == 0 {
                 pc = memory[0][register[hold.3 as usize] as usize];
             }
-            //makes temp equal to the cloned memory and stores it in memory[0]
+            // makes temp equal to the cloned memory and stores it in memory[0]
             else {
-                let temp:Vec<u32> = memory[register[hold.2 as usize] as usize].clone();
+                let temp: Vec<u32> = memory[register[hold.2 as usize] as usize].clone();
                 memory[0] = temp;
                 pc = memory[0][register[hold.3 as usize] as usize];
-                
             }
-            x = register[hold.3 as usize] as usize;
+            x = register[hold.3 as usize] as usize; // Set x to the index
+            x += 1; // Increment x
         }
         //stores the value in register a 
         else if hold.0 == 13{
@@ -165,7 +165,7 @@ pub fn rum(fisrt: Vec<u32>){
             pc = memory[0][x+1];
             x = x + 1;
         }
-        
+        x += 1;
     }
 }
 
