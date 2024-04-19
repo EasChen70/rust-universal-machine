@@ -13,7 +13,7 @@ static RC: Field = Field {width: 3, lsb: 0};
 static RL: Field = Field {width: 3, lsb: 25};
 static VL: Field = Field {width: 25, lsb: 0};
 static OP: Field = Field {width: 4, lsb: 28};
-//ask ta what to do when failure occurs 
+//ask ta what to do when failure occurs -- panic 
 //how to load in a program
 #[derive(Debug, PartialEq, Copy, Clone, FromPrimitive)]
 #[repr(u32)]
@@ -91,15 +91,17 @@ pub fn rum(fisrt: Vec<u32>){
         //output
         else if hold.0 == 10{
             if register[hold.3 as usize] <= 255{
-            std::io::stdout().write_all(&register[hold.3 as usize].to_be_bytes()).unwrap();
-            std::io::stdout().flush().unwrap();
+                match u8::try_from(hold.3){
+                Ok(val) => {println!("{}",val)},
+                Err(error) => {panic!()}
+                }
             }
             else{
                 process::exit(1);
             }
         }
         else if hold.0 == 11{
-            //ask ta to check input and output
+            //ask ta to check input and output -- look at notes 
             // Read a single byte of input from stdin
         let input_byte = std::io::stdin().bytes().next().unwrap().unwrap();
 
@@ -129,9 +131,8 @@ pub fn rum(fisrt: Vec<u32>){
         //stores the value in register a 
         else if hold.0 == 13{
             register[hold.1 as usize] = hold.2;
+            pc = memory[0][x+1];
         }
-        println!("{},{}",register[0],register[1]);
-        pc = memory[0][x+1];
     }
 }
 
