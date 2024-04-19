@@ -92,7 +92,7 @@ pub fn rum(fisrt: Vec<u32>){
         else if hold.0 == 10{
             if register[hold.3 as usize] <= 255{
                 match u8::try_from(register[hold.3 as usize]){
-                Ok(val) => {print!("{}",val)},
+                Ok(val) => {print!("{}",val as char)},
                 Err(error) => {panic!("{}",error)}
                 }
                 pc = memory[0][x+1];
