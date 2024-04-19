@@ -1,6 +1,6 @@
 use num_derive::FromPrimitive;
-use num_traits::{FromPrimitive, ToBytes};
-use std::{io::{Read, Write}, process};
+use num_traits::FromPrimitive;
+use std::{io::Read, process};
 use bitpack;
 type Umi = u32;
 pub struct Field {
@@ -42,7 +42,7 @@ pub fn rum(fisrt: Vec<u32>){
     memory.push(fisrt);
     //make pc equal to the first word in memory[0]
     let mut pc: u32 = memory[0][0];
-    for mut x in  0 .. memory[0].len(){
+    for x in  0 .. memory[0].len(){
         //gets the op, ra, rb, rc
         let hold = disassemble(pc);
         //makes sure it is a valid op code 
@@ -62,7 +62,7 @@ pub fn rum(fisrt: Vec<u32>){
         //does the instructions cmove, add, multiplication, division, and bitwise NAND
         else if hold.0 == 0 || (3 <= hold.0 && hold.0<= 6){
             if register[hold.3 as usize] != 0{
-                register[hold.1 as usize] = simpleInstrutions(hold.0, register[hold.2 as usize], register[hold.3 as usize]);
+                register[hold.1 as usize] = simple_instrutions(hold.0, register[hold.2 as usize], register[hold.3 as usize]);
             }
         }
         //halts 
@@ -91,10 +91,11 @@ pub fn rum(fisrt: Vec<u32>){
         //output
         else if hold.0 == 10{
             if register[hold.3 as usize] <= 255{
-                match u8::try_from(hold.3){
-                Ok(val) => {println!("{}",val)},
-                Err(error) => {panic!()}
+                match u8::try_from(register[hold.3 as usize]){
+                Ok(val) => {print!("{}",val)},
+                Err(error) => {panic!("{}",error)}
                 }
+                pc = memory[0][x+1];
             }
             else{
                 process::exit(1);
@@ -118,15 +119,15 @@ pub fn rum(fisrt: Vec<u32>){
             //makes pc equal to the specific memory
             if register[hold.2 as usize] == 0{
                 pc = memory[0][register[hold.3 as usize] as usize];
-                x = register[hold.3 as usize] as usize  - 1;
             }
             //makes temp equal to the cloned memory and stores it in memory[0]
             else {
                 let temp:Vec<u32> = memory[register[hold.2 as usize] as usize].clone();
                 memory[0] = temp;
                 pc = memory[0][register[hold.3 as usize] as usize];
-                x = register[hold.3 as usize] as usize  - 1;
+                
             }
+
         }
         //stores the value in register a 
         else if hold.0 == 13{
@@ -157,7 +158,7 @@ pub fn disassemble(inst: Umi) -> (u32,u32,u32,u32) {
     }
 }
 
-pub fn simpleInstrutions (op:u32, rb:u32,rc:u32) -> u32 {
+pub fn simple_instrutions (op:u32, rb:u32,rc:u32) -> u32 {
     let power:u32 = 2;
     if op == 0{
         return rb;
@@ -173,7 +174,7 @@ pub fn simpleInstrutions (op:u32, rb:u32,rc:u32) -> u32 {
         if rc == 0{
             process::exit(1);
         }else {
-            return (rb/rc);
+            return rb/rc;
         }
     }
     else if op == 6{
