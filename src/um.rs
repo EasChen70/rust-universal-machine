@@ -1,6 +1,7 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use std::{io::Read, process};
+use std::process;
+
 use bitpack;
 type Umi = u32;
 pub struct Field {
@@ -42,7 +43,8 @@ pub fn rum(fisrt: Vec<u32>){
     memory.push(fisrt);
     //make pc equal to the first word in memory[0]
     let mut pc: u32 = memory[0][0];
-    for x in  0 .. memory[0].len(){
+    let mut x = 0;
+    while x <= memory[0].len(){
         //gets the op, ra, rb, rc
         let hold = disassemble(pc);
         //makes sure it is a valid op code 
@@ -52,18 +54,38 @@ pub fn rum(fisrt: Vec<u32>){
         //segment load
         //loads the segment into register a 
         else if hold.0 == 1{
+            
             register[hold.1 as usize] = memory[register[hold.2 as usize] as usize][register[hold.3 as usize] as usize];
+            if x != memory[0].len()-1{
+                pc =  memory[0][x+1];
+            }
+            x = x + 1;
         }
         //segment stores
         //stores the segment 
         else if hold.0 == 2{
             memory[register[hold.1 as usize] as usize][register[hold.2 as usize] as usize] = register[hold.3 as usize];
+            if x != memory[0].len()-1{
+                pc =  memory[0][x+1];
+            }
+            x = x + 1;
         }
         //does the instructions cmove, add, multiplication, division, and bitwise NAND
-        else if hold.0 == 0 || (3 <= hold.0 && hold.0<= 6){
+        else if hold.0 == 0{
             if register[hold.3 as usize] != 0{
-                register[hold.1 as usize] = simple_instrutions(hold.0, register[hold.2 as usize], register[hold.3 as usize]);
+                register[hold.1 as usize] = register[hold.2 as usize];
             }
+            if x != memory[0].len()-1{
+                pc = memory[0][x+1];
+            }
+            x = x + 1;
+        } 
+        else if 3 <= hold.0 && hold.0<= 6{
+            register[hold.1 as usize] = simple_instrutions(hold.0, register[hold.2 as usize], register[hold.3 as usize]);
+            if x != memory[0].len()-1{
+                pc =  memory[0][x+1];
+            }
+            x = x + 1;
         }
         //halts 
         else if hold.0 == 7{
@@ -83,10 +105,18 @@ pub fn rum(fisrt: Vec<u32>){
                 memory[idenfier[0] as usize] = temp;
                 idenfier.remove(0);
             }
+            if x != memory[0].len()-1{
+                pc =  memory[0][x+1];
+            }
+            x = x + 1;
         }
         //adds an unmapped identifer so that we can check when we are mapping 
         else if hold.0 == 9{
             idenfier.push(register[hold.3 as usize]);
+            if x != memory[0].len()-1{
+                pc =  memory[0][x+1];
+            }
+            x = x + 1;
         }
         //output
         else if hold.0 == 10{
@@ -95,24 +125,24 @@ pub fn rum(fisrt: Vec<u32>){
                 Ok(val) => {print!("{}",val as char)},
                 Err(error) => {panic!("{}",error)}
                 }
-                pc = memory[0][x+1];
+                if x != memory[0].len()-1{
+                    pc =  memory[0][x+1];
+                }
             }
             else{
                 process::exit(1);
             }
+            x = x + 1;
         }
+        //input
         else if hold.0 == 11{
             //ask ta to check input and output -- look at notes 
-            // Read a single byte of input from stdin
-        let input_byte = std::io::stdin().bytes().next().unwrap().unwrap();
-
-        // Convert the input byte to u32
-        let input_u32: u32 = input_byte as u32;
-        if input_u32 <=255{
-            //ask what does it mean when an input has been signaled 
-            // Store the input u32 in register[hold.3]
-            register[hold.3 as usize] = input_u32;
-        }
+            let mut input = String::new();            
+            std::io::stdin().read_line(&mut input).expect("Failed to read line");
+            let num: u32 = input.trim().parse().expect("Invalid input");
+            register[hold.3 as usize] = num;
+            pc = memory[0][x+1];
+            x = x + 1;
         }
         //load program 
         else if hold.0 == 12{
@@ -127,13 +157,15 @@ pub fn rum(fisrt: Vec<u32>){
                 pc = memory[0][register[hold.3 as usize] as usize];
                 
             }
-
+            x = register[hold.3 as usize] as usize;
         }
         //stores the value in register a 
         else if hold.0 == 13{
             register[hold.1 as usize] = hold.2;
             pc = memory[0][x+1];
+            x = x + 1;
         }
+        
     }
 }
 
@@ -159,15 +191,10 @@ pub fn disassemble(inst: Umi) -> (u32,u32,u32,u32) {
 }
 
 pub fn simple_instrutions (op:u32, rb:u32,rc:u32) -> u32 {
-    let power:u32 = 2;
-    if op == 0{
-        return rb;
-    }
-    else if op == 3{
-        return (rb + rc) % power.pow(32);
-    }
-    else if op == 4{
-        return (rb * rc) % power.pow(32);
+    if op == 3 {
+        return ((rb as u64 + rc as u64) % (1u64 << 32)) as u32;
+    } else if op == 4 {
+        return ((rb as u64 * rc as u64) % (1u64 << 32)) as u32;
     }
     else if op == 5{
         //ask about what to do for division 
@@ -178,7 +205,7 @@ pub fn simple_instrutions (op:u32, rb:u32,rc:u32) -> u32 {
         }
     }
     else if op == 6{
-        return rb & rc;
+        return !(rb & rc);
     }
     else {
         //fail
