@@ -58,11 +58,13 @@ pub fn rum(first: Vec<u32>) {
         // Handle valid instructions and increment pc
         if hold.0 == 1 {
             if identifier.contains(&(register[hold.2 as usize] as usize)) {
+                println!("test1");
                 process::exit(1);
             } else if register[hold.3 as usize] as usize >= memory.len()
                 || register[hold.2 as usize] as usize >= memory.len()
                 || register[hold.3 as usize] as usize >= memory[register[hold.2 as usize] as usize].len()
             {
+                println!("test2");
                 process::exit(1);
             } else {
                 register[hold.1 as usize] = memory[register[hold.2 as usize] as usize]
@@ -71,11 +73,13 @@ pub fn rum(first: Vec<u32>) {
             }
         } else if hold.0 == 2 {
             if identifier.contains(&(register[hold.1 as usize] as usize)) {
+                println!("test3");
                 process::exit(1);
             } else if register[hold.2 as usize] as usize >= memory.len()
                 || register[hold.1 as usize] as usize >= memory.len()
                 || register[hold.2 as usize] as usize >= memory[register[hold.1 as usize] as usize].len()
             {
+                println!("test4");
                 process::exit(1);
             } else {
                 memory[register[hold.1 as usize] as usize][register[hold.2 as usize] as usize] =
@@ -106,8 +110,10 @@ pub fn rum(first: Vec<u32>) {
             pc += 1;
         } else if hold.0 == 9 {
             if register[hold.3 as usize] == 0 {
+                println!("test5");
                 process::exit(1);
             } else if identifier.contains(&(register[hold.3 as usize] as usize)) {
+                println!("test6");
                 process::exit(1);
             } else {
                 identifier.push(register[hold.3 as usize] as usize);
@@ -117,6 +123,7 @@ pub fn rum(first: Vec<u32>) {
             if register[hold.3 as usize] <= 255 {
                 print!("{}", register[hold.3 as usize] as u8 as char);
             } else {
+                println!("test7");
                 process::exit(1);
             }
             pc += 1;
@@ -130,6 +137,7 @@ pub fn rum(first: Vec<u32>) {
             pc += 1;
         } else if hold.0 == 12 {
             if identifier.contains(&(register[hold.3 as usize] as usize)) {
+                println!("test8");
                 process::exit(1);
             }
             if register[hold.2 as usize] == 0 {
